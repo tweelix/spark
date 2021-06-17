@@ -134,6 +134,17 @@ class DataFrameAggregateSuite extends QueryTest
     )
   }
 
+  test("grouping_sets") {
+    checkAnswer(
+      courseSales.grouping_sets(Seq("course", "year"), Seq()).sum("earnings"),
+      Row("Java", 2012, 20000.0) ::
+        Row("Java", 2013, 30000.0) ::
+        Row("dotNET", 2012, 15000.0) ::
+        Row("dotNET", 2013, 48000.0) ::
+        Row(null, null, 113000.0) :: Nil
+    )
+  }
+
   test("cube") {
     checkAnswer(
       courseSales.cube("course", "year").sum("earnings"),

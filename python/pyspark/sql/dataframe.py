@@ -1439,6 +1439,13 @@ class DataFrame(PandasMapOpsMixin, PandasConversionMixin):
             cols = cols[0]
         return self._jseq(cols, _to_java_column)
 
+    def _jgrouping_sets(self, *sets):
+        """Return a JVM Seq of Columns from a list of Column or column names
+
+        If `cols` has only one list in it, cols[0] will be used as the list.
+        """
+        return self.sql_ctx._sc._jvm.PythonUtils.toSeq(self._jcols(set_) for set_ in sets)
+
     def _sort_cols(self, cols, kwargs):
         """ Return a JVM Seq of Columns that describes the sort order
         """
@@ -1785,6 +1792,11 @@ class DataFrame(PandasMapOpsMixin, PandasConversionMixin):
         +-----+----+-----+
         """
         jgd = self._jdf.rollup(self._jcols(*cols))
+        from pyspark.sql.group import GroupedData
+        return GroupedData(jgd, self)
+
+    def grouping_sets(self, *sets):
+        jgd = self._jdf.grouping_sets(self._jgrouping_sets(*sets))
         from pyspark.sql.group import GroupedData
         return GroupedData(jgd, self)
 

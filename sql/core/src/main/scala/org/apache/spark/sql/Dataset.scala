@@ -1713,6 +1713,11 @@ class Dataset[T] private[sql](
     RelationalGroupedDataset(toDF(), cols.map(_.expr), RelationalGroupedDataset.CubeType)
   }
 
+  @scala.annotation.varargs
+  def grouping_sets(sets: Seq[Column]*): RelationalGroupedDataset = {
+    RelationalGroupingSetsDataset(toDF(), sets.map(_.map(_.expr)))
+  }
+
   /**
    * Groups the Dataset using the specified columns, so that we can run aggregation on them.
    * See [[RelationalGroupedDataset]] for all the available aggregate functions.
@@ -1818,6 +1823,12 @@ class Dataset[T] private[sql](
     val colNames: Seq[String] = col1 +: cols
     RelationalGroupedDataset(
       toDF(), colNames.map(colName => resolve(colName)), RelationalGroupedDataset.RollupType)
+  }
+
+  @scala.annotation.varargs
+  def grouping_sets(set1: Seq[String], sets: Seq[String]*): RelationalGroupedDataset = {
+    val colNames: Seq[Seq[String]] = set1 +: sets
+    RelationalGroupingSetsDataset(toDF(), colNames.map(_.map(colName => resolve(colName))))
   }
 
   /**
