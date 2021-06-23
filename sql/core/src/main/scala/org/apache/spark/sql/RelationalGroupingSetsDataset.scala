@@ -21,14 +21,19 @@ import org.apache.spark.annotation.Stable
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
 
+/**
+ * A special case of the [[RelationalGroupedDataset]] to allow Grouping Set syntax
+ *
+ * @since TBD
+ */
 @Stable
 class RelationalGroupingSetsDataset protected[sql](
     private[sql] override val df: DataFrame,
     private[sql] val groupingSets: Seq[Seq[Expression]]) extends RelationalGroupedDataset(
-      df, groupingSets.flatten.distinct, RelationalGroupedDataset.GroupingSetsType
-    ) {
+        df, groupingSets.flatten.distinct, RelationalGroupedDataset.GroupingSetsType
+) {
 
-    protected override def toDF(aggExprs: Seq[Expression]): DataFrame = {
+  protected override final def toDF(aggExprs: Seq[Expression]): DataFrame = {
     val aggregates = if (df.sparkSession.sessionState.conf.dataFrameRetainGroupColumns) {
       groupingExprs match {
         // call `toList` because `Stream` can't serialize in scala 2.13

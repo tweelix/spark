@@ -653,5 +653,8 @@ private[sql] object RelationalGroupedDataset {
    */
   private[sql] case class PivotType(pivotCol: Expression, values: Seq[Expression]) extends GroupType
 
+  /**
+   * To indicate it's the GROUPING SET
+   */
   private[sql] object GroupingSetsType extends GroupType
 }

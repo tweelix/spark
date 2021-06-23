@@ -1713,6 +1713,27 @@ class Dataset[T] private[sql](
     RelationalGroupedDataset(toDF(), cols.map(_.expr), RelationalGroupedDataset.CubeType)
   }
 
+  /**
+   * Create a multi-dimensional aggregation for the current Dataset using the specified
+   * sets of columns, so we can run aggregation on them.
+   * See [[RelationalGroupedDataset]] for all the available aggregate functions.
+   *
+   * {{{
+   *   // Compute the average for all numeric columns grouped by department and group
+   *   as well as the total.
+   *   ds.cube(Seq($"department", $"group"), Seq()).avg()
+   *
+   *   // Compute the max age and average salary, grouped by department and gender
+   *   as well as just gender.
+   *   ds.cube(Seq($"department", $"gender"), Seq($"gender")).agg(Map(
+   *     "salary" -> "avg",
+   *     "age" -> "max"
+   *   ))
+   * }}}
+   *
+   * @group untypedrel
+   * @since TBD
+   */
   @scala.annotation.varargs
   def grouping_sets(sets: Seq[Column]*): RelationalGroupedDataset = {
     RelationalGroupingSetsDataset(toDF(), sets.map(_.map(_.expr)))
@@ -1825,6 +1846,30 @@ class Dataset[T] private[sql](
       toDF(), colNames.map(colName => resolve(colName)), RelationalGroupedDataset.RollupType)
   }
 
+  /**
+   * Create a multi-dimensional aggregation for the current Dataset using the specified
+   * sets of columns, so we can run aggregation on them.
+   * See [[RelationalGroupedDataset]] for all the available aggregate functions.
+   *
+   * * This is a variant of grouping_sets that can only group by existing columns using column names
+   * (i.e. cannot construct expressions).
+   *
+   * {{{
+   *   // Compute the average for all numeric columns grouped by department and group
+   *   as well as the total.
+   *   ds.cube(Seq($"department", $"group"), Seq()).avg()
+   *
+   *   // Compute the max age and average salary, grouped by department and gender
+   *   as well as just gender.
+   *   ds.cube(Seq($"department", $"gender"), Seq($"gender")).agg(Map(
+   *     "salary" -> "avg",
+   *     "age" -> "max"
+   *   ))
+   * }}}
+   *
+   * @group untypedrel
+   * @since TBD
+   */
   @scala.annotation.varargs
   def grouping_sets(set1: Seq[String], sets: Seq[String]*): RelationalGroupedDataset = {
     val colNames: Seq[Seq[String]] = set1 +: sets

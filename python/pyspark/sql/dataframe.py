@@ -1439,10 +1439,8 @@ class DataFrame(PandasMapOpsMixin, PandasConversionMixin):
             cols = cols[0]
         return self._jseq(cols, _to_java_column)
 
-    def _jgrouping_sets(self, *sets):
-        """Return a JVM Seq of Columns from a list of Column or column names
-
-        If `cols` has only one list in it, cols[0] will be used as the list.
+    def _jseq_of_seq(self, *sets):
+        """Return a JVM Seq of Seqs from a list of lists of Columns or column names
         """
         return self.sql_ctx._sc._jvm.PythonUtils.toSeq(self._jcols(set_) for set_ in sets)
 
@@ -1796,7 +1794,39 @@ class DataFrame(PandasMapOpsMixin, PandasConversionMixin):
         return GroupedData(jgd, self)
 
     def grouping_sets(self, *sets):
-        jgd = self._jdf.grouping_sets(self._jgrouping_sets(*sets))
+        """
+        Create a mult-dimensional grouping for the :class:`DataFrame` using the
+        grouping sets specified, so we can run aggregation on them
+
+        .. versionadded:: TBD
+
+        Parameters
+        ----------
+        sets : list
+            lists of columns to group by
+            Each element should be list of column names (string)
+                or a list of expressions (:class:`Column`)
+
+        Examples
+        --------
+        >>> df.grouping_sets(["name", df.age], []).count().orderBy("name", "age").show()
+        +-----+----+-----+
+        | name| age|count|
+        +-----+----+-----+
+        | null|null|    2|
+        |Alice|   2|    1|
+        |  Bob|   5|    1|
+        +-----+----+-----+
+        >>> df.grouping_sets(["name", df.age], ["name"]).count().orderBy("name", "age").show()
+        +-----+----+-----+
+        | name| age|count|
+        +-----+----+-----+
+        | null|null|    2|
+        |Alice|null|    1|
+        |  Bob|null|    1|
+        +-----+----+-----+
+        """
+        jgd = self._jdf.grouping_sets(self._jseq_of_seq(*sets))
         from pyspark.sql.group import GroupedData
         return GroupedData(jgd, self)
 
