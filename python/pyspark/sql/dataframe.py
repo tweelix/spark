@@ -1821,9 +1821,10 @@ class DataFrame(PandasMapOpsMixin, PandasConversionMixin):
         +-----+----+-----+
         | name| age|count|
         +-----+----+-----+
-        | null|null|    2|
         |Alice|null|    1|
+        |Alice|   2|    1|
         |  Bob|null|    1|
+        |  Bob|   5|    1|
         +-----+----+-----+
         """
         jgd = self._jdf.grouping_sets(self._jseq_of_seq(*sets))
